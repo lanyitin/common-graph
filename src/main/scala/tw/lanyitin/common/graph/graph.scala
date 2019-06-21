@@ -109,4 +109,33 @@ case class Graph[V, U] (val nodes: Set[Node[V]], val edges: Set[Edge[V, U]]) {
       beginSet.contains(path.edges.head.from) && endSet.contains(path.edges.last.to)
     }
   }
+
+  def addNode(node: Node[V]): Graph[V, U] = {
+    Graph(nodes + node, edges)
+  }
+
+  def addNodes(_nodes: Array[Node[V]]): Graph[V, U] = {
+    Graph(nodes ++ _nodes, edges)
+  }
+
+  def removeNode(node: Node[V]): Graph[V, U] = {
+    Graph(nodes - node, edges.filter(e => {
+      e match {
+        case DirectedEdge(n1, n2, _) => n1 != node && n2 != node
+        case UndirectedEdge(n1, n2, _) => n1 != node && n2 != node
+      }
+    }))
+  }
+
+  def addEdge(edge: Edge[V, U]): Graph[V, U] = {
+    val (n1, n2, _) = this.extractDataFromEdge(edge)
+    Graph(nodes ++ Set(n1, n2), edges + edge)
+  }
+
+  def extractDataFromEdge(edge: Edge[V, U]): (Node[V], Node[V], U) = {
+    edge match {
+      case DirectedEdge(n1, n2, data) => (n1, n2, data)
+      case UndirectedEdge(n1, n2, data) => (n1, n2, data)
+    }
+  }
 }
