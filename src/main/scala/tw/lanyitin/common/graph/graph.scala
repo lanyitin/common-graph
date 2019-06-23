@@ -2,9 +2,15 @@ package tw.lanyitin.common.graph
 
 case class Node[V] (val payload: V)
 
-sealed trait Edge[V, U]
-case class UndirectedEdge[V, U](val node1: Node[V], val node2: Node[V], val annotation: U = null) extends Edge[V, U]
-case class DirectedEdge[V, U](val from: Node[V], val to: Node[V], val annotation: U = null) extends Edge[V, U]
+sealed trait Edge[V, U] {
+  def extractData: (Node[V], Node[V], U)
+}
+case class UndirectedEdge[V, U](val node1: Node[V], val node2: Node[V], val annotation: U = null) extends Edge[V, U] {
+  def extractData = (node1, node2, annotation)
+}
+case class DirectedEdge[V, U](val from: Node[V], val to: Node[V], val annotation: U = null) extends Edge[V, U] {
+  def extractData = (from, to, annotation)
+}
 
 case class Path[V, U](edges: List[DirectedEdge[V, U]]) {
   override def toString: String = {
@@ -128,14 +134,13 @@ case class Graph[V, U] (val nodes: Set[Node[V]], val edges: Set[Edge[V, U]]) {
   }
 
   def addEdge(edge: Edge[V, U]): Graph[V, U] = {
-    val (n1, n2, _) = this.extractDataFromEdge(edge)
+    val (n1, n2, _) = edge.extractData
     Graph(nodes ++ Set(n1, n2), edges + edge)
   }
+}
 
-  def extractDataFromEdge(edge: Edge[V, U]): (Node[V], Node[V], U) = {
-    edge match {
-      case DirectedEdge(n1, n2, data) => (n1, n2, data)
-      case UndirectedEdge(n1, n2, data) => (n1, n2, data)
-    }
-  }
+trait GraphFactory[V, U] {
+  def pseudoNode: Node[V]
+  def pseudoEdge(node1: Node[V], node2: Node[V]): Edge[V, U]
+  def duplicateNode(node: Node[V]): Node[V]
 }
