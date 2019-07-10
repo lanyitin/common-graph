@@ -9,4 +9,5 @@ lazy val root = project
 
     // To make the default compiler and REPL use Dotty
     scalaVersion := "2.12.8",
+    crossPaths := false
   )
